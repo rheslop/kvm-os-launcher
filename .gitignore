@@ -1,0 +1,4 @@
+*html
+ansible/ansible.log
+ansible/hosts
+ansible/locked-vars.yml
