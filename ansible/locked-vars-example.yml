@@ -1,0 +1,11 @@
+---
+# Red Hat subscription
+username: username
+password: password
+pool: 1234567890ABCDEF
+
+# Apply user specific values and run the following:
+# -------------------------------------------------
+# mv locked-vars-sample.yml locked-vars.yml
+# ansible-vault encrypt locked-vars.yml
+

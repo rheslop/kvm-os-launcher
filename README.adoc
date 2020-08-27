@@ -1,0 +1,31 @@
+= KVM OS Launcher
+
+version 0.2
+
+.Prerequisites
+
+. Python3
+. The virtualization package group
+. A KVM OS image to be used as template
+. A configuration file appropriate for your environment
++
+* The `TEMPLATE` variable needs to be set for the path and specific image that you've downloaded
+* The `NETWORK` variable is the first three octets of a network address, and should not conflict with an existing KVM network - configuration of `NETWORK_2` is optional.
+* The variables `VCPUS`, `MEMORY`, and `DISK`, should be sized appropriately for your environment 
+* The ANSIBLE_PLAY function and DISK_CUSTOMIZATION functions should not be empty, even if there is a single line that does nothing, such as `echo -n ""`. 
+
+.Procedure
+
+. Run the executable, with root privileges, followed by a configuration file name, followed by an integer (10 - 200 inclusive). For example:
++
+----
+[rheslop@rsys kvm-os-launcher]$ sudo ./spawn.py --config rhel-8 --id 15
+----
+
+Note the following:
+
+* The root's SSH key will be copied into the VM for passwordless access
+* For all other users, the default password is 'password'.
+* The IP address will be the first three octets as specified by the `NETWORK` variable. The last octet is specified by the provided integer.
+* The hostname will be the VM image OS version (for example rhel-7) followed by the IP's last octet.
+* The domain name will be set to the value of the `NETWORK_NAME` variable, plus '.local'.

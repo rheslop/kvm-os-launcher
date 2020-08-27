@@ -1,0 +1,15 @@
+---
+- name: Red Hat Subscription Manager registration
+  hosts: host
+  remote_user: root
+  vars_files: locked-vars.yml
+
+  tasks:
+
+  - name: Registering to Red Hat
+    redhat_subscription:
+      state: present
+      username: "{{ username }}"
+      password: "{{ password }}"
+      pool: "{{ pool }}"
+      autosubscribe: no
