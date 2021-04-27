@@ -219,6 +219,9 @@ if [ ! -z "${NETWORK_NAME_2}" ] && [ ! -z "${NETWORK_2}" ]; then
 fi
 
 CONFIGURE_DISK
+
+qemu-img snapshot -c VANILLA ${DISK}
+
 CREATE_VM
 virsh start ${NAME}
 ANSIBLE_PLAY
