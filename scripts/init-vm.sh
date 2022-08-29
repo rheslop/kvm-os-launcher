@@ -186,7 +186,7 @@ if [ ! -z "${NETWORK_NAME_2}" ] && [ ! -z "${NETWORK_2}" ]; then
 --network network=${NETWORK_NAME_2} \
 --name ${NAME} \
 --ram ${MEMORY} \
---os-type=linux \
+--os-variant=linux2022 \
 --dry-run --print-xml > /tmp/${NAME}.xml
 
 else
@@ -198,7 +198,7 @@ else
 --network network=${NETWORK_NAME} \
 --name ${NAME} \
 --ram ${MEMORY} \
---os-type=linux \
+--os-variant=linux2022 \
 --dry-run --print-xml > /tmp/${NAME}.xml
 
 fi
