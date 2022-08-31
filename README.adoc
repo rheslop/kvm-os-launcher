@@ -13,6 +13,7 @@ version 0.2
 * The `NETWORK` variable is the first three octets of a network address, and should not conflict with an existing KVM network - configuration of `NETWORK_2` is optional.
 * The variables `VCPUS`, `MEMORY`, and `DISK`, should be sized appropriately for your environment 
 * The ANSIBLE_PLAY function and DISK_CUSTOMIZATION functions should not be empty, even if there is a single line that does nothing, such as `echo -n ""`. 
+* The `OS_VARIANT` variable can optionally be set to define the value passed to the --os-variant flag for the virt-install application. The default value is `linux2022`. You can view available OS variants by running `osinfo-query os`.
 
 .Procedure
 
