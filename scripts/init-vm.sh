@@ -170,7 +170,7 @@ echo -e "\n"
 
 function CONFIGURE_DISK {
 qemu-img create -f qcow2 ${DISK} ${DISK_SIZE}
-virt-resize --expand /dev/sda1 ${TEMPLATE} ${DISK}
+virt-resize --expand ${DISK_EXPAND_PART:-/dev/sda1} ${TEMPLATE} ${DISK}
 DISK_CUSTOMIZATIONS
 }
 
