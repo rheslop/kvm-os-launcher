@@ -11,7 +11,7 @@ if [ ! -f /root/.ssh/id_rsa ]; then
 	ssh-keygen -t rsa -b 2048 -N "" -f /root/.ssh/id_rsa
 fi
 
-# If an SSH key exists for this VM (from a previous deploy) remove it
+# If the VM's name or IP is in known_hosts from a previous deploy, remove it
 
 echo -e "## Cleaning up known_hosts ##\n"
 
@@ -176,8 +176,6 @@ DISK_CUSTOMIZATIONS
 
 function CREATE_VM {
 
-if [ ! -z "${NETWORK_NAME_2}" ] && [ ! -z "${NETWORK_2}" ]; then
-
 /usr/bin/virt-install \
 --disk path=${DISK} \
 --import \
@@ -188,20 +186,6 @@ if [ ! -z "${NETWORK_NAME_2}" ] && [ ! -z "${NETWORK_2}" ]; then
 --ram ${MEMORY} \
 --os-variant=${OS_VARIANT:-linux2022} \
 --dry-run --print-xml > /tmp/${NAME}.xml
-
-else
-
-/usr/bin/virt-install \
---disk path=${DISK} \
---import \
---vcpus ${VCPUS} \
---network network=${NETWORK_NAME} \
---name ${NAME} \
---ram ${MEMORY} \
---os-variant=${OS_VARIANT:-linux2022} \
---dry-run --print-xml > /tmp/${NAME}.xml
-
-fi
 
 virsh define --file /tmp/${NAME}.xml && rm /tmp/${NAME}.xml
 }
