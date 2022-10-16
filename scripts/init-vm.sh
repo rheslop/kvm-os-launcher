@@ -46,7 +46,7 @@ else
 fi
 }
 
-function NETCHECK_ONE {
+function NETWORK_CHECK {
 echo -e "\n## Checking for network: ${NETWORK_NAME} ##\n"
 
 if virsh net-list --all | grep " ${NETWORK_NAME} " ; then
@@ -87,9 +87,9 @@ rm /tmp/${NETWORK_NAME}.xml
 fi
 
 echo -e "\n"
-}
 
-function NETCHECK_TWO {
+######################################################
+
 echo -e "\n## Checking for network: ${NETWORK_NAME_2}"
 
 if virsh net-list --all | grep " ${NETWORK_NAME_2} " ; then
@@ -132,39 +132,31 @@ fi
 echo -e "\n"
 }
 
-function CONFIGURE_NIC_ONE {
-cat > /tmp/ifcfg-eth0 << EOF
-DEVICE="eth0"
-BOOTPROTO="none"
-ONBOOT="yes"
-TYPE="Ethernet"
-USERCTL="yes"
-IPADDR="${NETWORK}.${ID}"
-NETMASK="255.255.255.0"
-GATEWAY="${NETWORK}.1"
-DNS1="${NETWORK}.1"
+function CONFIGURE_NETWORK {
+cat > /tmp/conf-networking.sh << EOF
+
+nmcli con add type ethernet con-name eth0 ifname eth0 ipv4.method manual ipv4.addresses ${NETWORK}.${ID}/24 gw4 ${NETWORK}.1
+nmcli con modify eth0 ipv4.dns 8.8.8.8
+nmcli con up eth0
+nmcli con add type ethernet con-name eth1 ifname eth1 ipv4.method manual ipv4.addresses ${NETWORK_2}.${ID}/24 gw4 ${NETWORK_2}.1
+nmcli con modify eth1 ipv4.dns 8.8.8.8
+nmcli con up eth1
 EOF
+
+
 echo "eth0 configuration:"
 echo "-------------------"
-cat /tmp/ifcfg-eth0
+echo "IP Address: ${NETWORK}.${ID}"
+echo "Gateway:    ${NETWORK}.1"
+echo "DNS:        8.8.8.8"
 echo -e "\n"
-}
 
-function CONFIGURE_NIC_TWO {
-cat > /tmp/ifcfg-eth1 << EOF
-DEVICE="eth1"
-BOOTPROTO="none"
-ONBOOT="yes"
-TYPE="Ethernet"
-USERCTL="yes"
-IPADDR="${NETWORK_2}.${ID}"
-NETMASK="255.255.255.0"
-GATEWAY="${NETWORK_2}.1"
-DNS1="${NETWORK_2}.1"
-EOF
+
 echo "eth1 configuration:"
 echo "-------------------"
-cat /tmp/ifcfg-eth1
+echo "IP Address: ${NETWORK_2}.${ID}"
+echo "Gateway:    ${NETWORK_2}.1"
+echo "DNS:        8.8.8.8"
 echo -e "\n"
 }
 
@@ -194,14 +186,8 @@ SSH_KEY_MANAGEMENT
 PACKAGE_MANAGEMENT
 TEMPLATE_CHECK
 
-NETCHECK_ONE
-CONFIGURE_NIC_ONE
-
-if [ ! -z "${NETWORK_NAME_2}" ] && [ ! -z "${NETWORK_2}" ]; then
-	NETCHECK_TWO
-	CONFIGURE_NIC_TWO
-fi
-
+NETWORK_CHECK
+CONFIGURE_NETWORK
 CONFIGURE_DISK
 
 qemu-img snapshot -c VANILLA ${DISK}
