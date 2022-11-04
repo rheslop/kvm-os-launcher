@@ -1,33 +1,48 @@
 = KVM OS Launcher
 
-version 0.2
+version 0.3
 
 .Prerequisites
 
 . Python3
 . The virtualization package group
-. A KVM OS image to be used as template
-. A configuration file appropriate for your environment
-+
-* The `TEMPLATE` variable needs to be set for the path and specific image that you've downloaded.
-* The `NETWORK` variable is the first three octets of a network address, and should not conflict with an existing KVM network - configuration of `NETWORK_2` is optional.
-* The variables `VCPUS`, `MEMORY`, and `DISK`, should be sized appropriately for your environment.
-* The ANSIBLE_PLAY function and DISK_CUSTOMIZATION functions should not be empty, even if there is a single line that does nothing, such as `echo -n ""`.
-* The `OS_VARIANT` variable can optionally be set to define the value passed to the --os-variant flag for the virt-install application. The default value is `linux2022`. You can view available OS variants by running `osinfo-query os`.
-* The `DISK_EXPAND_PART` variable can be set to the partition path within the virtual machine to match which partition to expand to the provided `DISK_SIZE`. The default value is `/dev/sda1` if not defined in the configuration template.
+. A KVM OS image to be used as template, placed in `/var/lib/libvirt/images/templates`.
+. A configuration file, samples are provided in the `./conf` directory.
 
 .Procedure
 
 . Run the executable, with root privileges, followed by a configuration file name, followed by an integer (10 - 200 inclusive). For example:
 +
 ----
-[rheslop@rsys kvm-os-launcher]$ sudo ./spawn.py --config rhel-8 --id 15
+[rheslop@rsys kvm-os-launcher]$ sudo ./spawn.py --config rhel-8-large --id 15
 ----
 
-Note the following:
+A virtual machine is created then created with the following attributes:
 
-* The root's SSH key will be copied into the VM for passwordless access
+* The root's SSH key is copied into the VM
 * For all other users, the default password is 'password'.
-* The IP address will be the first three octets as specified by the `NETWORK` variable. The last octet is specified by the provided integer.
-* The hostname will be the VM image OS version (for example rhel-7) followed by the IP's last octet.
+* The IP addresses are the first three octets specified by the `NETWORK` and `NETWORK_2` variables. The last octet is the user-provided id. For example, the command `./spawn.py --config rhel-8-large --id 15` creates a VM with an IP address of `10.10.10.15`, if you keep the default values.
+* The hostnames are set to the configuration name followed by the id. For example, the command `./spawn.py --config rhel-8-large --id 15`, creates a VM with the hostname `rhel-8-large-15`.
 * The domain name will be set to the value of the `NETWORK_NAME` variable, plus '.local'.
+
+.Template Variables
+
+It best to copy a sample configuration file and modify rather than attempt to create one from scratch. For your reference, many of the variables used are provided below.
+
+[%header]
+|===
+| Variable | Required | Value 
+| ID | yes | Must be set to $2
+| VCPUS | yes | The number of virtual CPUs you create the VM with.
+| MEMORY | yes | Enter the value in megabytes.
+| DISK_SIZE | yes | Enter the value in gigabytes with a trailing 'G'. Example `100G`.
+| DISK_EXPAND_PART | no | Set to the partition path within the virtual machine to match which partition to expand to the provided `DISK_SIZE`. The default value is `/dev/sda1` if not defined.
+| NETWORK_NAME | yes | The name of a KVM network. It is created if it does not yet exist. It is also the domainname of the VM you create. For example, a VM created with `./spawn.py --config rhel-8-large --id 15`, and a `NETWORK_NAME` of `kvm-os-net-1`, will have an FQDN of `rhel-8-large.kvm-os-net-1.local`.
+| NETWORK| yes | The first three octets of a network address, and should not conflict with an existing KVM network.
+| NETWORK_NAME_2 | yes | The name of a second KVM network. It is created if it does not yet exist.
+| NETWORK_2 | yes | The first three octets of a network address, and should not conflict with an existing VKM network.
+| NAME | yes | Both the hostname and KVM virtual machine name. The recommended standard is the name of the configuration file with ${ID} appended. For example: `rhel-8-large-${ID}`
+| DISK | yes | The recommended standard is `/var/lib/libvirt/images/${NAME}.qcow2`.
+| TEMPLATE | yes | The full path to a QCOW2 image that you've downloaded.
+| OS_VARIANT | no | Set to define the value passed to the --os-variant flag for the virt-install application. The default value is `linux2022`. You can view available OS variants by running `osinfo-query os`.
+|===
