@@ -2,7 +2,7 @@
 
 CONF=$1
 ID=$2
-source conf/${CONF}
+source ${CONF}
 
 function SSH_KEY_MANAGEMENT {
 # Create an SSH key for root if one does not already exist
