@@ -2,3 +2,4 @@
 ansible/ansible.log
 ansible/hosts
 ansible/locked-vars.yml
+conf/custom-*.conf
