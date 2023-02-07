@@ -20,10 +20,11 @@ version 0.3
 A virtual machine is created then created with the following attributes:
 
 * The root's SSH key is copied into the VM
-* For all other users, the default password is 'password'.
+* If you login as root from a non-root account, the default password is 'password'.
 * The IP addresses are the first three octets specified by the `NETWORK` and `NETWORK_2` variables. The last octet is the user-provided id. For example, the command `./spawn.py --config rhel-8-large --id 15` creates a VM with an IP address of `10.10.10.15`, if you keep the default values.
 * The hostnames are set to the configuration name followed by the id. For example, the command `./spawn.py --config rhel-8-large --id 15`, creates a VM with the hostname `rhel-8-large-15`.
-* The domain name will be set to the value of the `NETWORK_NAME` variable, plus '.local'.
+* The `eth0` inteface is for management, and is non-routing. The `eth1` interface routes, and is for services.
+* The domain name is set to the value of the `NETWORK_NAME_2` variable, plus '.local'. This behavior can be changed from within the template.
 
 .Template Variables
 
