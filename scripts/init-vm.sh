@@ -135,14 +135,13 @@ echo -e "\n"
 function CONFIGURE_NETWORK {
 cat > /tmp/conf-networking.sh << EOF
 
-nmcli con add type ethernet con-name eth0 ifname eth0 ipv4.method manual ipv4.addresses ${NETWORK}.${ID}/24
+nmcli con add type ethernet con-name eth0 ifname eth0 ipv4.method manual ipv4.addresses ${NETWORK}.${ID}/24 gw4 ${NETWORK}.1
 nmcli con modify eth0 ipv4.dns ${DNS:-8.8.8.8}
 nmcli con up eth0
-nmcli con add type ethernet con-name eth1 ifname eth1 ipv4.method manual ipv4.addresses ${NETWORK_2}.${ID}/24 gw4 ${NETWORK_2}.1
+nmcli con add type ethernet con-name eth1 ifname eth1 ipv4.method manual ipv4.addresses ${NETWORK_2}.${ID}/24
 nmcli con modify eth1 ipv4.dns ${DNS:-8.8.8.8}
 nmcli con up eth1
 EOF
-
 
 echo "eth0 configuration:"
 echo "-------------------"
@@ -150,7 +149,6 @@ echo "IP Address: ${NETWORK}.${ID}"
 echo "Gateway:    ${NETWORK}.1"
 echo "DNS:        ${DNS:-8.8.8.8}"
 echo -e "\n"
-
 
 echo "eth1 configuration:"
 echo "-------------------"

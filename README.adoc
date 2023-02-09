@@ -23,8 +23,16 @@ A virtual machine is created then created with the following attributes:
 * If you login as root from a non-root account, the default password is 'password'.
 * The IP addresses are the first three octets specified by the `NETWORK` and `NETWORK_2` variables. The last octet is the user-provided id. For example, the command `./spawn.py --config rhel-8-large --id 15` creates a VM with an IP address of `10.10.10.15`, if you keep the default values.
 * The hostnames are set to the configuration name followed by the id. For example, the command `./spawn.py --config rhel-8-large --id 15`, creates a VM with the hostname `rhel-8-large-15`.
-* The `eth0` inteface is for management, and is non-routing. The `eth1` interface routes, and is for services.
 * The domain name is set to the value of the `NETWORK_NAME_2` variable, plus '.local'. This behavior can be changed from within the template.
+* The `eth0` inteface is for management, and routes by default. The `eth1` is for services, and does not route.
+** You can use nmcli to modify routing once the VM starts. For example, to make eth0 non-routing, and eth1 routing:
++
+----
+nmcli con mod eth0 ipv4.gateway ""
+nmcli con mod eth1 ipv4.gateway "172.16.16.1"
+nmcli con up eth0
+nmcli con up eth1
+----
 
 .Template Variables
 
