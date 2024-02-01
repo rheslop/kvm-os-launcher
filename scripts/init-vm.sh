@@ -188,8 +188,8 @@ NETWORK_CHECK
 CONFIGURE_NETWORK
 CONFIGURE_DISK
 
-qemu-img snapshot -c VANILLA ${DISK}
+# qemu-img snapshot -c VANILLA ${DISK}
 
-CREATE_VM
-virsh start ${NAME}
-ANSIBLE_PLAY
+# CREATE_VM
+# virsh start ${NAME}
+# ANSIBLE_PLAY
