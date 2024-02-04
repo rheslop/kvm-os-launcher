@@ -133,7 +133,7 @@ echo -e "\n"
 }
 
 function CONFIGURE_NETWORK {
-cat > /tmp/conf-networking.sh << EOF
+cat > exec/${NAME}-conf-networking.sh << EOF
 
 nmcli con add type ethernet con-name eth0 ifname eth0 ipv4.method manual ipv4.addresses ${NETWORK}.${ID}/24 gw4 ${NETWORK}.1
 nmcli con modify eth0 ipv4.dns ${DNS:-8.8.8.8}
@@ -165,7 +165,7 @@ DISK_CUSTOMIZATIONS
 }
 
 function CREATE_VM {
-
+cat > exec/${NAME}-create_vm.sh << EOF
 /usr/bin/virt-install \
 --disk path=${DISK} \
 --import \
@@ -178,6 +178,7 @@ function CREATE_VM {
 --dry-run --print-xml > /tmp/${NAME}.xml
 
 virsh define --file /tmp/${NAME}.xml && rm /tmp/${NAME}.xml
+EOF
 }
 
 SSH_KEY_MANAGEMENT
@@ -190,6 +191,6 @@ CONFIGURE_DISK
 
 # qemu-img snapshot -c VANILLA ${DISK}
 
-# CREATE_VM
+CREATE_VM
 # virsh start ${NAME}
 # ANSIBLE_PLAY
