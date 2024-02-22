@@ -133,7 +133,7 @@ echo -e "\n"
 }
 
 function CONFIGURE_NETWORK {
-cat > exec/${NAME}-conf-networking.sh << EOF
+cat > exec/${ID}-conf-networking.sh << EOF
 
 nmcli con add type ethernet con-name eth0 ifname eth0 ipv4.method manual ipv4.addresses ${NETWORK}.${ID}/24 gw4 ${NETWORK}.1
 nmcli con modify eth0 ipv4.dns ${DNS:-8.8.8.8}
@@ -158,15 +158,36 @@ echo "DNS:        ${DNS:-8.8.8.8}"
 echo -e "\n"
 }
 
+function DISK_CUSTOMIZATION { 
+cat > exec/${ID}-customize_disk.sh << EOF
+
+export LIBGUESTFS_BACKEND=direct
+
+sudo virt-customize -v -x -a ${DISK} \
+--root-password password:password \
+--hostname ${NAME}.${NETWORK_NAME_2}.local \
+--edit /etc/ssh/sshd_config:s/PasswordAuthentication\ no/PasswordAuthentication\ yes/g \
+--edit /etc/ssh/sshd_config:s/\#PermitRootLogin\ prohibit-password/PermitRootLogin\ yes/ \
+--firstboot exec/${ID}-conf-networking.sh \
+--ssh-inject root \
+--run-command '/usr/bin/yum -y remove cloud-init' \
+--run-command 'echo "UseDNS no" >> /etc/ssh/sshd_config' \
+--selinux-relabel
+
+sudo qemu-img snapshot -c VANILLA ${DISK}
+
+EOF
+}
+
 function CONFIGURE_DISK {
 qemu-img create -f qcow2 ${DISK} ${DISK_SIZE}
 virt-resize --expand ${DISK_EXPAND_PART:-/dev/sda1} ${TEMPLATE} ${DISK}
-DISK_CUSTOMIZATIONS
+DISK_CUSTOMIZATION
 }
 
 function CREATE_VM {
-cat > exec/${NAME}-create_vm.sh << EOF
-/usr/bin/virt-install \
+cat > exec/${ID}-create_vm.sh << EOF
+sudo /usr/bin/virt-install \
 --disk path=${DISK} \
 --import \
 --vcpus ${VCPUS} \
@@ -177,7 +198,20 @@ cat > exec/${NAME}-create_vm.sh << EOF
 --os-variant=${OS_VARIANT:-linux2022} \
 --dry-run --print-xml > /tmp/${NAME}.xml
 
-virsh define --file /tmp/${NAME}.xml && rm /tmp/${NAME}.xml
+sudo virsh define --file /tmp/${NAME}.xml && sudo rm /tmp/${NAME}.xml
+
+sudo virsh start ${NAME}
+
+EOF
+}
+
+function REMOVE_VM {
+cat > exec/${ID}-remove_vm.sh << EOF
+#!/bin/bash
+
+sudo virsh destroy ${NAME}
+sudo virsh undefine ${NAME} --remove-all-storage || sudo rm /var/lib/libvirt/images/${NAME}.qcow2
+sudo rm exec/${ID}-*
 EOF
 }
 
@@ -189,8 +223,11 @@ NETWORK_CHECK
 CONFIGURE_NETWORK
 CONFIGURE_DISK
 
-# qemu-img snapshot -c VANILLA ${DISK}
 
 CREATE_VM
+REMOVE_VM
+
+chmod +x exec/*
+
 # virsh start ${NAME}
 # ANSIBLE_PLAY
