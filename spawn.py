@@ -15,6 +15,7 @@ vm = troll.parse_args()
 # Variables, dictionaries and functions
 CURRENT_DIRECTORY=os.getcwd()
 CONF_OPTIONS={}
+EXEC = CURRENT_DIRECTORY + "/exec"
 
 # The CONF_OPTION is the name of a configuration file with '.conf' stripped away
 # The CONF_OPTION is the key that points to the full path and filename as the value
@@ -29,6 +30,9 @@ def ADDCONFFILES(path):
                 pass
             else:
                 CONF_OPTIONS[CONF_OPTION] = path + "/" + i
+
+if not os.path.exists(EXEC):
+    os.makedir(EXEC)
 
 # /opt/kol/conf takes precedence over ./conf
 
@@ -76,5 +80,5 @@ else:
 createVM = (script + " %s %d") % (CONF_OPTIONS.get(CONFIG), VMID)
 os.system(createVM)
 
-customize_disk_and_start = (CURRENT_DIRECTORY + "/exec/" + "%s" + "-customize_disk_and_create.sh") % (VMID)
+customize_disk_and_start = (EXEC + "/" + "%s" + "-customize_disk_and_create.sh") % (VMID)
 os.system(customize_disk_and_start)
