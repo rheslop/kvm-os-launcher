@@ -32,7 +32,7 @@ def ADDCONFFILES(path):
                 CONF_OPTIONS[CONF_OPTION] = path + "/" + i
 
 if not os.path.exists(EXEC):
-    os.makedir(EXEC)
+    os.makedirs(EXEC)
 
 # /opt/kol/conf takes precedence over ./conf
 
