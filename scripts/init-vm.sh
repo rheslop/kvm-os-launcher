@@ -158,8 +158,13 @@ echo "DNS:        ${DNS:-8.8.8.8}"
 echo -e "\n"
 }
 
-function DISK_CUSTOMIZATION { 
-cat > exec/${ID}-customize_disk.sh << EOF
+function CONFIGURE_DISK {
+qemu-img create -f qcow2 ${DISK} ${DISK_SIZE}
+virt-resize --expand ${DISK_EXPAND_PART:-/dev/sda1} ${TEMPLATE} ${DISK}
+}
+
+function CUSTOMIZE_AND_START { 
+cat > exec/${ID}-customize_disk_and_create.sh << EOF
 
 export LIBGUESTFS_BACKEND=direct
 
@@ -175,18 +180,8 @@ sudo virt-customize -v -x -a ${DISK} \
 --selinux-relabel
 
 sudo qemu-img snapshot -c VANILLA ${DISK}
+rm exec/${ID}-conf-networking.sh
 
-EOF
-}
-
-function CONFIGURE_DISK {
-qemu-img create -f qcow2 ${DISK} ${DISK_SIZE}
-virt-resize --expand ${DISK_EXPAND_PART:-/dev/sda1} ${TEMPLATE} ${DISK}
-DISK_CUSTOMIZATION
-}
-
-function CREATE_VM {
-cat > exec/${ID}-create_vm.sh << EOF
 sudo /usr/bin/virt-install \
 --disk path=${DISK} \
 --import \
@@ -199,19 +194,37 @@ sudo /usr/bin/virt-install \
 --dry-run --print-xml > /tmp/${NAME}.xml
 
 sudo virsh define --file /tmp/${NAME}.xml && sudo rm /tmp/${NAME}.xml
-
 sudo virsh start ${NAME}
+
+rm exec/${ID}-customize_disk_and_create.sh
 
 EOF
 }
 
-function REMOVE_VM {
+function HELPER_SCRIPTS {
 cat > exec/${ID}-remove_vm.sh << EOF
 #!/bin/bash
 
 sudo virsh destroy ${NAME}
 sudo virsh undefine ${NAME} --remove-all-storage || sudo rm /var/lib/libvirt/images/${NAME}.qcow2
 sudo rm exec/${ID}-*
+EOF
+
+cat > exec/${ID}-reset_vm.sh << EOF
+if [[ \$(id -u) -ne 0 ]]; then
+   echo "You must use sudo to reset the VM." 
+   exit 1
+fi
+
+if [ \$(virsh domstate ${NAME}) == "running" ]; then virsh destroy ${NAME}; fi
+qemu-img snapshot -a VANILLA ${DISK}
+virsh start ${NAME}
+
+if [ -f /root/.ssh/known_hosts ]; then
+        ssh-keygen -R ${NAME}
+        ssh-keygen -R ${NETWORK}.${ID}
+fi
+
 EOF
 }
 
@@ -223,9 +236,8 @@ NETWORK_CHECK
 CONFIGURE_NETWORK
 CONFIGURE_DISK
 
-
-CREATE_VM
-REMOVE_VM
+CUSTOMIZE_AND_START
+HELPER_SCRIPTS
 
 chmod +x exec/*
 

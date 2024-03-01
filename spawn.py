@@ -76,3 +76,5 @@ else:
 createVM = (script + " %s %d") % (CONF_OPTIONS.get(CONFIG), VMID)
 os.system(createVM)
 
+customize_disk_and_start = (CURRENT_DIRECTORY + "/exec/" + "%s" + "-customize_disk_and_create.sh") % (VMID)
+os.system(customize_disk_and_start)
